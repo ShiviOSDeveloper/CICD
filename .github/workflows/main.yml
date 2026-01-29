@@ -17,10 +17,7 @@ jobs:
       - name: Show Xcode Version
         run: xcodebuild -version
 
-      - name: List Available Simulators
-        run: xcrun simctl list devices
-
-      - name: Build App
+      - name: Build App (iOS Simulator Only)
         run: |
           set -o pipefail
           xcodebuild clean build \
@@ -28,12 +25,10 @@ jobs:
           -sdk iphonesimulator \
           -destination 'generic/platform=iOS Simulator'
 
-
-        - name: Run Tests
+      - name: Run Tests (iOS Simulator Only)
         run: |
           set -o pipefail
           xcodebuild test \
           -scheme "MyCICD" \
           -sdk iphonesimulator \
           -destination 'generic/platform=iOS Simulator'
-
