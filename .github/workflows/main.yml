@@ -24,13 +24,17 @@ jobs:
           -destination 'generic/platform=iOS Simulator'
 
       # ✅ Auto Pick Simulator + Run Tests
-      - name: Run Tests (Auto Pick Simulator)
+        - name: Run Tests (Auto Pick Valid Simulator)
         run: |
           set -o pipefail
 
-          echo "🔍 Finding available iPhone simulator..."
+          echo "🔍 Finding valid iPhone simulator (iOS <= 18.5)..."
 
-          DEVICE=$(xcrun simctl list devices available | grep -m 1 "iPhone" | sed -E 's/ *([^()]*) \(.*/\1/')
+          DEVICE=$(xcrun simctl list devices available \
+            | grep "iPhone" \
+            | grep -E "OS:18" \
+            | head -n 1 \
+            | sed -E 's/ *([^()]*) \(.*/\1/')
 
           echo "✅ Selected Simulator: $DEVICE"
 
