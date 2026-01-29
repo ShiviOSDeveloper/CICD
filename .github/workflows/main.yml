@@ -15,7 +15,7 @@ jobs:
       # Step 1: Checkout Code
       # ----------------------------
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # ----------------------------
       # Step 2: Build App (Simulator)
@@ -35,7 +35,7 @@ jobs:
       # Step 3: Upload Build Artifact (.app)
       # ----------------------------
       - name: Upload Simulator Build Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: MyCICD-Simulator-Build
           path: build/Build/Products/Debug-iphonesimulator/MyCICD.app
