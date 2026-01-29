@@ -40,6 +40,7 @@ jobs:
           echo "🔍 Finding first available iPhone Simulator (iOS 18.x)..."
 
           SIMULATOR_UDID=$(xcrun simctl list devices available --json | python3 <<'PY'
+          
 import json, sys
 
 data = json.load(sys.stdin)
