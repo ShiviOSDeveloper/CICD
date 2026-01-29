@@ -1,0 +1,30 @@
+name: iOS CI Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Select Xcode Version
+        run: sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Install Dependencies
+        run: |
+          pod install || echo "No Pods Found"
+
+      - name: Build App
+        run: |
+          xcodebuild clean build \
+          -workspace MyCICD.xcworkspace \
+          -scheme MyCICD \
+          -sdk iphoneos \
+          -destination 'generic/platform=iOS'
