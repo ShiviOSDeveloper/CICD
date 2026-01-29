@@ -11,34 +11,57 @@ jobs:
     runs-on: macos-latest
 
     steps:
+      # ---------------------------------------------------
+      # Step 1: Checkout Repository
+      # ---------------------------------------------------
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # ✅ Build Step (Generic Simulator OK)
-      - name: Build App
+      # ---------------------------------------------------
+      # Step 2: Show Xcode Version (Debug Info)
+      # ---------------------------------------------------
+      - name: Show Xcode Version
+        run: xcodebuild -version
+
+      # ---------------------------------------------------
+      # Step 3: Build App (Generic Simulator Works)
+      # ---------------------------------------------------
+      - name: Build MyCICD App
         run: |
           set -o pipefail
+          echo "🏗 Building MyCICD..."
+
           xcodebuild clean build \
-          -scheme "MyCICD" \
-          -sdk iphonesimulator \
-          -destination 'generic/platform=iOS Simulator'
+            -scheme "MyCICD" \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator'
 
-      # ✅ Auto Pick Simulator + Run Tests
-        - name: Run Tests (Auto Pick Valid Simulator)
+      # ---------------------------------------------------
+      # Step 4: Auto Pick Valid iPhone Simulator (iOS 18.x Only)
+      # ---------------------------------------------------
+      - name: Run Tests (Auto Pick Simulator)
         run: |
           set -o pipefail
 
-          echo "🔍 Finding valid iPhone simulator (iOS <= 18.5)..."
+          echo "🔍 Searching for valid iPhone simulator (iOS 18.x)..."
 
+          # Pick first available iPhone Simulator with OS 18.x
           DEVICE=$(xcrun simctl list devices available \
             | grep "iPhone" \
             | grep -E "OS:18" \
             | head -n 1 \
             | sed -E 's/ *([^()]*) \(.*/\1/')
 
+          if [ -z "$DEVICE" ]; then
+            echo "❌ No valid iOS 18 simulator found!"
+            exit 1
+          fi
+
           echo "✅ Selected Simulator: $DEVICE"
 
+          echo "🧪 Running Unit + UI Tests..."
+
           xcodebuild test \
-          -scheme "MyCICD" \
-          -sdk iphonesimulator \
-          -destination "platform=iOS Simulator,name=$DEVICE"
+            -scheme "MyCICD" \
+            -sdk iphonesimulator \
+            -destination "platform=iOS Simulator,name=$DEVICE"
