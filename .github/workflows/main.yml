@@ -2,24 +2,20 @@ name: iOS CI - Build & Test (MyCICD)
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build-and-test:
     runs-on: macos-latest
 
     steps:
-      # ----------------------------
-      # Step 1: Checkout Repository
-      # ----------------------------
+      # Step 1: Checkout
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # ----------------------------
-      # Step 2: Build App
-      # ----------------------------
+      # Step 2: Build
       - name: Build MyCICD
         run: |
           set -o pipefail
@@ -28,26 +24,18 @@ jobs:
             -sdk iphonesimulator \
             -destination 'generic/platform=iOS Simulator'
 
-      # ----------------------------
-      # Step 3: Find Simulator Destination Automatically
-      # ----------------------------
-      - name: Run Tests (Auto Simulator)
+      # Step 3: Run Tests on a Concrete Simulator
+      - name: Run Tests
         run: |
           set -o pipefail
 
-          echo "🔍 Finding first available iOS Simulator..."
+          echo "🔍 Finding first available REAL iPhone simulator..."
 
-          DESTINATION=$(
-            xcodebuild -scheme "MyCICD" -showdestinations \
-            | grep "platform:iOS Simulator" \
-            | head -n 1 \
-            | sed 's/.*{/{/' \
-            | sed 's/}.*$/}/'
-          )
+          DEVICE=$(xcrun simctl list devices available | grep "iPhone" | grep "(18" | head -n 1 | sed -E 's/ *([^()]*) \(.*/\1/')
 
-          echo "✅ Using Destination: $DESTINATION"
+          echo "✅ Selected Simulator: $DEVICE"
 
           xcodebuild test \
             -scheme "MyCICD" \
             -sdk iphonesimulator \
-            -destination "$DESTINATION"
+            -destination "platform=iOS Simulator,name=$DEVICE"
