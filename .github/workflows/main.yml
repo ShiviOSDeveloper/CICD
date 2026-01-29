@@ -26,12 +26,14 @@ jobs:
           xcodebuild clean build \
           -scheme "MyCICD" \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 14'
+          -destination 'generic/platform=iOS Simulator'
 
-      - name: Run Tests
+
+        - name: Run Tests
         run: |
           set -o pipefail
           xcodebuild test \
           -scheme "MyCICD" \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 14'
+          -destination 'generic/platform=iOS Simulator'
+
