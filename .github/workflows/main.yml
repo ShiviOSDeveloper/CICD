@@ -26,19 +26,33 @@ jobs:
             -sdk iphonesimulator \
             -destination 'generic/platform=iOS Simulator'
 
-      # ✅ Test Step (Auto Pick Simulator by UDID)
+      # ✅ Test Step (Auto Pick Correct Simulator)
       - name: Run Tests (Auto Pick Simulator)
         run: |
           set -o pipefail
 
-          echo "🔍 Finding first available iPhone simulator..."
+          echo "🔍 Picking first available iPhone Simulator (iOS 18.x)..."
 
-          SIMULATOR_UDID=$(xcrun simctl list devices available \
-            | grep "iPhone" \
-            | head -n 1 \
-            | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
+          SIMULATOR_UDID=$(
+            xcrun simctl list devices available --json \
+            | python3 -c "
+import json,sys
+data=json.load(sys.stdin)
+for runtime,devices in data['devices'].items():
+    for d in devices:
+        if d.get('isAvailable') and 'iPhone' in d['name'] and '18.' in d['osVersion']:
+            print(d['udid'])
+            sys.exit(0)
+print('')
+"
+          )
 
-          echo "✅ Selected Simulator UDID: $SIMULATOR_UDID"
+          if [ -z \"$SIMULATOR_UDID\" ]; then
+            echo \"❌ No valid iPhone simulator found!\"
+            exit 1
+          fi
+
+          echo \"✅ Selected Simulator UDID: $SIMULATOR_UDID\"
 
           xcodebuild test \
             -scheme "MyCICD" \
