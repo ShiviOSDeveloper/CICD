@@ -2,9 +2,9 @@ name: iOS CI - Build & Test (MyCICD)
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
   pull_request:
-    branches: ["main"]
+    branches: [ "main" ]
 
 jobs:
   build-and-test:
@@ -12,7 +12,7 @@ jobs:
 
     steps:
       # ----------------------------
-      # Step 1: Checkout Code
+      # Step 1: Checkout Repository
       # ----------------------------
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -20,49 +20,34 @@ jobs:
       # ----------------------------
       # Step 2: Build App
       # ----------------------------
-      - name: Build MyCICD App
+      - name: Build MyCICD
         run: |
           set -o pipefail
-          echo "🏗 Building MyCICD..."
-
           xcodebuild clean build \
             -scheme "MyCICD" \
             -sdk iphonesimulator \
             -destination 'generic/platform=iOS Simulator'
 
       # ----------------------------
-      # Step 3: Auto Pick Simulator + Run Tests
+      # Step 3: Find Simulator Destination Automatically
       # ----------------------------
-      - name: Run Tests (Auto Pick Simulator)
+      - name: Run Tests (Auto Simulator)
         run: |
           set -o pipefail
 
-          echo "🔍 Finding first available iPhone Simulator (iOS 18.x)..."
+          echo "🔍 Finding first available iOS Simulator..."
 
-          SIMULATOR_UDID=$(xcrun simctl list devices available --json | python3 <<'PY'
-          
-import json, sys
-
-data = json.load(sys.stdin)
-
-for runtime, devices in data["devices"].items():
-    for d in devices:
-        if d.get("isAvailable") and "iPhone" in d["name"]:
-            # Pick only iOS 18.x simulators
-            if "18." in d.get("osVersion", ""):
-                print(d["udid"])
-                sys.exit(0)
-
-print("")
-sys.exit(1)
-PY
+          DESTINATION=$(
+            xcodebuild -scheme "MyCICD" -showdestinations \
+            | grep "platform:iOS Simulator" \
+            | head -n 1 \
+            | sed 's/.*{/{/' \
+            | sed 's/}.*$/}/'
           )
 
-          echo "✅ Selected Simulator UDID: $SIMULATOR_UDID"
-
-          echo "🧪 Running Tests..."
+          echo "✅ Using Destination: $DESTINATION"
 
           xcodebuild test \
             -scheme "MyCICD" \
             -sdk iphonesimulator \
-            -destination "id=$SIMULATOR_UDID"
+            -destination "$DESTINATION"
