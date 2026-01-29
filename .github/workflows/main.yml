@@ -28,3 +28,19 @@ jobs:
           -scheme MyCICD \
           -sdk iphoneos \
           -destination 'generic/platform=iOS'
+
+      - name: Run Unit Tests
+        run: |
+          xcodebuild test \
+          -workspace MyCICD.xcworkspace \
+          -scheme MyCICD \
+          -destination 'platform=iOS Simulator,name=iPhone 15'
+
+      - name: Archive App
+        run: |
+          xcodebuild archive \
+          -workspace MyCICD.xcworkspace \
+          -scheme MyCICD \
+          -archivePath build/App.xcarchive
+
+
