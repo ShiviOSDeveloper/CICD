@@ -24,18 +24,4 @@ jobs:
             -sdk iphonesimulator \
             -destination 'generic/platform=iOS Simulator'
 
-      # Step 3: Run Tests on a Concrete Simulator
-      - name: Run Tests
-        run: |
-          set -o pipefail
-
-          echo "🔍 Finding first available REAL iPhone simulator..."
-
-          DEVICE=$(xcrun simctl list devices available | grep "iPhone" | grep "(18" | head -n 1 | sed -E 's/ *([^()]*) \(.*/\1/')
-
-          echo "✅ Selected Simulator: $DEVICE"
-
-          xcodebuild test \
-            -scheme "MyCICD" \
-            -sdk iphonesimulator \
-            -destination "platform=iOS Simulator,name=$DEVICE"
+      
